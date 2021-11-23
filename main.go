@@ -5,6 +5,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/x0y14/gameAnimation/assets/characters"
+	"github.com/x0y14/gameAnimation/assets/stages/stage1"
 	"github.com/x0y14/gameAnimation/character"
 	"image"
 	_ "image/png"
@@ -27,27 +28,33 @@ func (g *Game) Update() error {
 
 	g.keys = inpututil.AppendPressedKeys(g.keys[:0])
 
-	if len(g.keys) == 0 && mrPunk.Situation != character.Idling {
+	if len(g.keys) == 0 && mrPunk.Situation != character.Idling && mrPunk.CountSituationMaintain < g.count {
 		mrPunk.UpdateSituation(character.Idling)
 	}
 	for _, key := range g.keys {
 		if key == ebiten.KeyArrowRight {
-			mrPunk.OffsetX += 2
+			if mrPunk.OffsetX < screenWidth {
+				mrPunk.OffsetX += 2
+			}
 			if mrPunk.Direction != character.Right {
 				mrPunk.Direction = character.Right
 			}
+			if mrPunk.Situation != character.Running {
+				mrPunk.UpdateSituation(character.Running)
+			}
 		} else if key == ebiten.KeyArrowLeft {
-			mrPunk.OffsetX -= 2
+			if 0 < mrPunk.OffsetX {
+				mrPunk.OffsetX -= 2
+			}
 			if mrPunk.Direction != character.Left {
 				mrPunk.Direction = character.Left
 			}
-		} else if key == ebiten.KeyArrowUp {
-			mrPunk.OffsetY -= 2
-		} else if key == ebiten.KeyArrowDown {
-			mrPunk.OffsetY += 2
-		}
-		if mrPunk.Situation != character.Running {
-			mrPunk.UpdateSituation(character.Running)
+			if mrPunk.Situation != character.Running {
+				mrPunk.UpdateSituation(character.Running)
+			}
+		} else if key == ebiten.KeySpace && mrPunk.Situation != character.Jumping {
+			mrPunk.CountSituationMaintain = g.count + mrPunk.Sprites.Jump.FrameMaintain*mrPunk.Sprites.Jump.FrameNum
+			mrPunk.UpdateSituation(character.Jumping)
 		}
 	}
 
@@ -55,6 +62,7 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	screen.DrawImage(stage1.Stage1.Img, &ebiten.DrawImageOptions{})
 	g.DrawCharacter(screen, mrPunk)
 }
 
@@ -72,6 +80,8 @@ func (g *Game) DrawCharacter(screen *ebiten.Image, c *character.Character) {
 		sprite = c.Sprites.Idle
 	case character.Running:
 		sprite = c.Sprites.Run
+	case character.Jumping:
+		sprite = c.Sprites.Jump
 	}
 
 	op.GeoM.Translate(-float64(sprite.FrameWidth)/2, -float64(sprite.FrameHeight)/2)
@@ -87,11 +97,19 @@ func (g *Game) DrawCharacter(screen *ebiten.Image, c *character.Character) {
 	screen.DrawImage(img, op)
 }
 
+func Gravity(c *character.Character) {
+	for {
+		break
+	}
+}
+
 func main() {
-	mrPunk = character.NewPunkTypeCharacter("mr", screenWidth/2, screenHeight/2)
+	mrPunk = character.NewPunkTypeCharacter("mr", screenWidth/2, screenHeight-10-16)
 	punkCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go mrPunk.ListenUpdateSituation(punkCtx)
+
+	go Gravity(mrPunk)
 
 	ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
 	ebiten.SetWindowTitle("character animation")

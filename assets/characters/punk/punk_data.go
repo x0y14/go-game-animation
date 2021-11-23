@@ -14,3 +14,8 @@ const IdleFrameNum = 4
 var RunBytes []byte
 
 const RunFrameNum = 6
+
+//go:embed Punk_jump.png
+var JumpBytes []byte
+
+const JumpFrameNum = 4

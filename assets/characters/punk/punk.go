@@ -31,12 +31,20 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	rnuImgEbi := ebiten.NewImageFromImage(runImg)
+	runImgEbi := ebiten.NewImageFromImage(runImg)
+
+	jumpBuf := bytes.NewBuffer(JumpBytes)
+	jumpImg, _, err := image.Decode(jumpBuf)
+	if err != nil {
+		log.Fatal(err)
+	}
+	jumpImgEbi := ebiten.NewImageFromImage(jumpImg)
 
 	PunkAssets = characters.CharacterSprites{
 		Idle: &characters.Sprite{
 			Img:           idleImgEbi,
 			FrameNum:      IdleFrameNum,
+			FrameMaintain: 0,
 			FrameHeight:   fHeight,
 			FrameWidth:    fWidth,
 			FrameInterval: fInterval,
@@ -44,13 +52,24 @@ func init() {
 			FrameOriginY:  fOriginY,
 		},
 		Run: &characters.Sprite{
-			Img:           rnuImgEbi,
+			Img:           runImgEbi,
 			FrameNum:      RunFrameNum,
+			FrameMaintain: 0,
 			FrameHeight:   fHeight,
 			FrameWidth:    fWidth,
 			FrameInterval: fInterval,
 			FrameOriginX:  fOriginX,
 			FrameOriginY:  fOriginY,
+		},
+		Jump: &characters.Sprite{
+			Img:           jumpImgEbi,
+			FrameNum:      JumpFrameNum,
+			FrameMaintain: 8,
+			FrameHeight:   39,
+			FrameWidth:    fWidth,
+			FrameInterval: fInterval,
+			FrameOriginX:  fOriginX,
+			FrameOriginY:  9,
 		},
 	}
 }
