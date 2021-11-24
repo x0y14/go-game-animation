@@ -12,7 +12,7 @@ const (
 var situation = [...]string{
 	Idling:  "Idling",
 	Running: "Running",
-	Jumping: "Jumping",
+	Jumping: "OnJumping",
 }
 
 func (s Situation) String() string {

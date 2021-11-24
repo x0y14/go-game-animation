@@ -64,7 +64,7 @@ func init() {
 		Jump: &characters.Sprite{
 			Img:           jumpImgEbi,
 			FrameNum:      JumpFrameNum,
-			FrameMaintain: 8,
+			FrameMaintain: 10,
 			FrameHeight:   39,
 			FrameWidth:    fWidth,
 			FrameInterval: fInterval,

@@ -10,6 +10,7 @@ import (
 type Character struct {
 	Name string
 	Situation
+	OnJumping              bool
 	CountSituationMaintain int
 	OffsetX                int
 	OffsetY                int
@@ -35,6 +36,7 @@ func NewPunkTypeCharacter(name string, x, y int) *Character {
 	return &Character{
 		Name:                   name,
 		Situation:              Idling,
+		OnJumping:              false,
 		CountSituationMaintain: 0,
 		OffsetX:                x,
 		OffsetY:                y,
@@ -66,4 +68,36 @@ func (c *Character) ListenUpdateSituation(ctx context.Context) {
 func (c *Character) UpdateSituation(situation Situation) {
 	fmt.Printf("状態変更要請: %v\n\n", situation.String())
 	c.SituationUpdateSender <- situation
+}
+
+func (c *Character) SetOffsetX(x int) {
+	c.OffsetX = x
+}
+
+func (c *Character) SetOffsetY(y int) {
+	c.OffsetY = y
+}
+
+func (c *Character) AddOffsetX(s int) {
+	c.OffsetX += s
+}
+
+func (c *Character) AddOffsetY(s int) {
+	c.OffsetY += s
+}
+
+func (c *Character) Jump() {
+	if c.OnJumping {
+		return
+	}
+
+	c.OnJumping = true
+	fmt.Printf("Jump from %v\n", c.OffsetY)
+	c.UpdateSituation(Jumping)
+
+	for {
+
+	}
+
+	//c.SetOffsetY(c.OffsetY - 16)
 }

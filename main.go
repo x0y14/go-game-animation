@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 	"github.com/x0y14/gameAnimation/assets/characters"
 	"github.com/x0y14/gameAnimation/assets/stages/stage1"
 	"github.com/x0y14/gameAnimation/character"
+	"github.com/x0y14/gameAnimation/physics"
 	"image"
 	_ "image/png"
 	"log"
@@ -27,6 +29,8 @@ func (g *Game) Update() error {
 	mrPunk.Count++
 
 	g.keys = inpututil.AppendPressedKeys(g.keys[:0])
+
+	Gravity(mrPunk)
 
 	if len(g.keys) == 0 && mrPunk.Situation != character.Idling && mrPunk.CountSituationMaintain < g.count {
 		mrPunk.UpdateSituation(character.Idling)
@@ -54,7 +58,7 @@ func (g *Game) Update() error {
 			}
 		} else if key == ebiten.KeySpace && mrPunk.Situation != character.Jumping {
 			mrPunk.CountSituationMaintain = g.count + mrPunk.Sprites.Jump.FrameMaintain*mrPunk.Sprites.Jump.FrameNum
-			mrPunk.UpdateSituation(character.Jumping)
+			mrPunk.Jump()
 		}
 	}
 
@@ -98,18 +102,26 @@ func (g *Game) DrawCharacter(screen *ebiten.Image, c *character.Character) {
 }
 
 func Gravity(c *character.Character) {
-	for {
-		break
+	if screenHeight-10-16 > c.OffsetY {
+		y := 0.5 * 9.8 * (physics.ConvertFrameCountToSec(c.Count) + 1) * (physics.ConvertFrameCountToSec(c.Count) + 1)
+		if physics.ConvertMeterToPixel(y/60)+c.OffsetY >= screenHeight-10-16 {
+			c.SetOffsetY(screenHeight - 10 - 16)
+			fmt.Printf("new offsetY : %v\n", c.OffsetY)
+			//c.OnJumping = true
+		} else {
+			//c.OffsetY += physics.ConvertMeterToPixel(y)
+			c.AddOffsetY(physics.ConvertMeterToPixel(y / 60))
+			fmt.Printf("new offsetY : %v\n", c.OffsetY)
+		}
 	}
 }
 
 func main() {
-	mrPunk = character.NewPunkTypeCharacter("mr", screenWidth/2, screenHeight-10-16)
+	// (screenHeight-10-16)が地面
+	mrPunk = character.NewPunkTypeCharacter("mr", screenWidth/2, screenHeight/2)
 	punkCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go mrPunk.ListenUpdateSituation(punkCtx)
-
-	go Gravity(mrPunk)
 
 	ebiten.SetWindowSize(screenWidth*2, screenHeight*2)
 	ebiten.SetWindowTitle("character animation")
